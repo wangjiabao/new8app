@@ -970,6 +970,8 @@ components:
                     type: string
                 reward:
                     type: string
+                rewardUsdt:
+                    type: string
         UserInfoReply_ListWithdraw:
             type: object
             properties:

@@ -8796,6 +8796,8 @@ func (m *UserInfoReply_ListReward) validate(all bool) error {
 
 	// no validation rules for Reward
 
+	// no validation rules for RewardUsdt
+
 	if len(errors) > 0 {
 		return UserInfoReply_ListRewardMultiError(errors)
 	}

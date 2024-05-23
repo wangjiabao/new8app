@@ -823,7 +823,6 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 			CreateAt: v.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
 		})
 	}
-	startDate := time.Now().AddDate(0, 0, -1)
 
 	// 分红
 	var (
@@ -833,71 +832,19 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	userRewards, err = uuc.ubRepo.GetUserRewardByUserId(ctx, myUser.ID)
 	if nil != userRewards {
 		for _, vUserReward := range userRewards {
-			if "location" == vUserReward.Reason {
-				if vUserReward.CreatedAt.After(startDate) {
-					totalYesReward += vUserReward.Amount
-				}
+			if "recommend_location" == vUserReward.Reason {
 				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.2f", float64(vUserReward.Amount)/float64(100000)) + "ISPS",
-					Type:      1,
-				})
-			} else if "area" == vUserReward.Reason {
-				if vUserReward.CreatedAt.After(startDate) {
-					totalYesReward += vUserReward.Amount
-				}
-				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.2f", float64(vUserReward.Amount)/float64(100000)) + "ISPS",
-					Type:      4,
-				})
-			} else if "recommend" == vUserReward.Reason {
-				if vUserReward.CreatedAt.After(startDate) {
-					totalYesReward += vUserReward.Amount
-				}
-				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.2f", float64(vUserReward.Amount)/float64(100000)) + "ISPS",
-					Type:      2,
-				})
-			} else if "recommend_location" == vUserReward.Reason {
-				if vUserReward.CreatedAt.After(startDate) {
-					totalYesReward += vUserReward.Amount
-				}
-				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.2f", float64(vUserReward.Amount)/float64(100000)),
-					Type:      8,
-				})
-			} else if "four" == vUserReward.Reason {
-				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.2f", float64(vUserReward.Amount)/float64(100000)),
-					Type:      3,
-				})
-			} else if "exchange" == vUserReward.Reason {
-				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.2f", float64(vUserReward.Amount)/float64(100000)) + "ISPS",
-					Type:      5,
-				})
-			} else if "exchange_2" == vUserReward.Reason {
-				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.2f", float64(vUserReward.Amount)/float64(100000)) + "ISPS",
-					Type:      5,
-				})
-			} else if "withdraw" == vUserReward.Reason {
-				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.2f", float64(vUserReward.Amount)/float64(100000)),
-					Type:      6,
+					CreatedAt:  vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+					Reward:     fmt.Sprintf("%.4f", float64(vUserReward.AmountB)/float64(100000)),
+					RewardUsdt: fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)) + "usdt",
+					Type:       8,
 				})
 			} else if "buy" == vUserReward.Reason {
 				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.2f", float64(vUserReward.Amount)/float64(100000)),
-					Type:      7,
+					CreatedAt:  vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+					Reward:     fmt.Sprintf("%.4f", float64(vUserReward.AmountB)/float64(100000)),
+					RewardUsdt: fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)) + "usdt",
+					Type:       7,
 				})
 			} else {
 				continue
@@ -1030,8 +977,8 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 		Status:                status,
 		BiwPrice:              float64(bPrice) / float64(bPriceBase),
 		ExchangeRate:          float64(exchangeRate) / 1000,
-		BalanceBiw:            fmt.Sprintf("%.2f", float64(userBalance.BalanceDhb)/float64(100000)) + "ISPS",
-		BalanceUsdt:           fmt.Sprintf("%.2f", float64(userBalance.BalanceUsdt)/float64(100000)),
+		BalanceBiw:            fmt.Sprintf("%.2f", float64(userBalance.BalanceDhb)/float64(100000)),
+		BalanceUsdt:           fmt.Sprintf("%.2f", float64(userBalance.BalanceUsdt)/float64(100000)) + "usdt",
 		BiwDaily:              "",
 		BuyNumTwo:             count2,
 		BuyNumThree:           count3,
@@ -1055,10 +1002,10 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 		InviteUserAddress:     inviteUserAddress,
 		InviteUrl:             encodeString,
 		Count:                 stopCount,
-		LocationReward:        fmt.Sprintf("%.2f", float64(userBalance.LocationTotal)/float64(100000)) + "ISPS",
-		RecommendReward:       fmt.Sprintf("%.2f", float64(userBalance.RecommendTotal)/float64(100000)) + "ISPS",
+		LocationReward:        fmt.Sprintf("%.2f", float64(userBalance.LocationTotal)/float64(100000)),
+		RecommendReward:       fmt.Sprintf("%.2f", float64(userBalance.RecommendTotal)/float64(100000)),
 		FourReward:            fmt.Sprintf("%.2f", float64(userBalance.FourTotal)/float64(100000)),
-		AreaReward:            fmt.Sprintf("%.2f", float64(userBalance.AreaTotal)/float64(100000)) + "ISPS",
+		AreaReward:            fmt.Sprintf("%.2f", float64(userBalance.AreaTotal)/float64(100000)),
 		FourRewardPool:        fmt.Sprintf("%.2f", float64(totalRewardYes)/float64(100000)),
 		FourRewardPoolYes:     fmt.Sprintf("%.2f", float64(totalRewardBef)/float64(100000)),
 		Four:                  fourList,
