@@ -331,17 +331,17 @@ func (uuc *UserUseCase) GetExistUserByAddressOrCreate(ctx context.Context, u *Us
 				return nil, errors.New(500, "USER_ERROR", "无效的推荐码")
 			}
 
-			var (
-				locationNew []*LocationNew
-			)
-			locationNew, err = uuc.locationRepo.GetLocationsByUserId(ctx, userId)
-			if nil != err {
-				return nil, errors.New(500, "USER_ERROR", "无效的推荐码")
-			}
+			//var (
+			//	locationNew []*LocationNew
+			//)
+			//locationNew, err = uuc.locationRepo.GetLocationsByUserId(ctx, userId)
+			//if nil != err {
+			//	return nil, errors.New(500, "USER_ERROR", "无效的推荐码")
+			//}
 
-			if 0 == len(locationNew) {
-				return nil, errors.New(500, "USER_ERROR", "无效的推荐码")
-			}
+			//if 0 == len(locationNew) {
+			//	return nil, errors.New(500, "USER_ERROR", "无效的推荐码")
+			//}
 
 			// 查询推荐人的相关信息
 			recommendUser, err = uuc.urRepo.GetUserRecommendByUserId(ctx, userId)
@@ -382,11 +382,11 @@ func (uuc *UserUseCase) GetExistUserByAddressOrCreate(ctx context.Context, u *Us
 
 func (uuc *UserUseCase) UpdateUserRecommend(ctx context.Context, u *User, req *v1.RecommendUpdateRequest) (*v1.RecommendUpdateReply, error) {
 	var (
-		err                   error
-		userId                int64
-		recommendUser         *UserRecommend
-		userRecommend         *UserRecommend
-		locations             []*LocationNew
+		err           error
+		userId        int64
+		recommendUser *UserRecommend
+		userRecommend *UserRecommend
+		//locations             []*LocationNew
 		myRecommendUser       *User
 		myUserRecommendUserId int64
 		Address               string
@@ -433,13 +433,13 @@ func (uuc *UserUseCase) UpdateUserRecommend(ctx context.Context, u *User, req *v
 		}
 
 		// 我的占位信息
-		locations, err = uuc.locationRepo.GetLocationsByUserId(ctx, u.ID)
-		if nil != err {
-			return nil, err
-		}
-		if nil != locations && 0 < len(locations) {
-			return &v1.RecommendUpdateReply{InviteUserAddress: myRecommendUser.Address}, nil
-		}
+		//locations, err = uuc.locationRepo.GetLocationsByUserId(ctx, u.ID)
+		//if nil != err {
+		//	return nil, err
+		//}
+		//if nil != locations && 0 < len(locations) {
+		//	return &v1.RecommendUpdateReply{InviteUserAddress: myRecommendUser.Address}, nil
+		//}
 
 		// 查询推荐人的相关信息
 		recommendUser, err = uuc.urRepo.GetUserRecommendByUserId(ctx, userId)
