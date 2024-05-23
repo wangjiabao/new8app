@@ -891,8 +891,10 @@ func addressCheck(addressParam string) (bool, error) {
 //}
 
 func verifySig(sigHex string, msg []byte) (bool, string) {
-	sig := hexutil.MustDecode(sigHex)
-
+	sig, err := hexutil.Decode(sigHex)
+	if nil != err {
+		return false, "err sign"
+	}
 	msg = accounts.TextHash(msg)
 	if sig[crypto.RecoveryIDOffset] == 27 || sig[crypto.RecoveryIDOffset] == 28 {
 		sig[crypto.RecoveryIDOffset] -= 27 // Transform yellow paper V from 27/28 to 0/1
