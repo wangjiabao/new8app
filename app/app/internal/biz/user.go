@@ -185,6 +185,7 @@ type ConfigRepo interface {
 }
 
 type UserBalanceRepo interface {
+	GetEthUserRecordListByUserId(ctx context.Context, userId int64) (map[string]*EthUserRecord, error)
 	CreateUserBalance(ctx context.Context, u *User) (*UserBalance, error)
 	CreateUserBalanceLock(ctx context.Context, u *User) (*UserBalance, error)
 	LocationReward(ctx context.Context, userId int64, amount int64, locationId int64, myLocationId int64, locationType string) (int64, error)
@@ -432,14 +433,17 @@ func (uuc *UserUseCase) UpdateUserRecommend(ctx context.Context, u *User, req *v
 			return &v1.RecommendUpdateReply{InviteUserAddress: myRecommendUser.Address}, nil
 		}
 
-		// 我的占位信息
-		//locations, err = uuc.locationRepo.GetLocationsByUserId(ctx, u.ID)
-		//if nil != err {
-		//	return nil, err
-		//}
-		//if nil != locations && 0 < len(locations) {
-		//	return &v1.RecommendUpdateReply{InviteUserAddress: myRecommendUser.Address}, nil
-		//}
+		var (
+			ethRecord map[string]*EthUserRecord
+		)
+		ethRecord, err = uuc.ubRepo.GetEthUserRecordListByUserId(ctx, u.ID)
+		if nil != err {
+			return nil, err
+		}
+
+		if 0 < len(ethRecord) {
+			return &v1.RecommendUpdateReply{InviteUserAddress: myRecommendUser.Address}, nil
+		}
 
 		// 查询推荐人的相关信息
 		recommendUser, err = uuc.urRepo.GetUserRecommendByUserId(ctx, userId)
@@ -1669,6 +1673,10 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 	if "2" == req.SendBody.Type {
 		req.SendBody.Type = "usdt"
 	}
+
+	if "3" == req.SendBody.Type {
+		req.SendBody.Type = "dhb"
+	}
 	//u, _ = uuc.repo.GetUserById(ctx, user.ID)
 	//if nil != err {
 	//	return nil, err
@@ -1687,6 +1695,10 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 	//}
 
 	if "usdt" != req.SendBody.Type {
+		return &v1.WithdrawReply{
+			Status: "fail",
+		}, nil
+	} else if "dhb" != req.SendBody.Type {
 		return &v1.WithdrawReply{
 			Status: "fail",
 		}, nil
@@ -1717,13 +1729,17 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 
 	// 配置
 	var (
-		configs     []*Config
-		withdrawMax int64
-		withdrawMin int64
+		configs         []*Config
+		withdrawMax     int64
+		withdrawMin     int64
+		withdrawMaxBnbs int64
+		withdrawMinBnbs int64
 	)
 	configs, err = uuc.configRepo.GetConfigByKeys(ctx,
 		"withdraw_amount_max",
 		"withdraw_amount_min",
+		"withdraw_amount_bnbs_max",
+		"withdraw_amount_bnbs_min",
 	)
 	if nil != configs {
 		for _, vConfig := range configs {
@@ -1734,11 +1750,19 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 			if "withdraw_amount_min" == vConfig.KeyName {
 				withdrawMin, _ = strconv.ParseInt(vConfig.Value+"00000", 10, 64)
 			}
+
+			if "withdraw_amount_bnbs_max" == vConfig.KeyName {
+				withdrawMaxBnbs, _ = strconv.ParseInt(vConfig.Value+"00000", 10, 64)
+			}
+
+			if "withdraw_amount_bnbs_min" == vConfig.KeyName {
+				withdrawMinBnbs, _ = strconv.ParseInt(vConfig.Value+"00000", 10, 64)
+			}
 		}
 	}
 
 	if "usdt" == req.SendBody.Type {
-		if userBalance.BalanceUsdt < amount {
+		if userBalance.BalanceUsdt <= amount {
 			amount = userBalance.BalanceUsdt
 		}
 
@@ -1749,6 +1773,24 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 		}
 
 		if withdrawMin > amount {
+			return &v1.WithdrawReply{
+				Status: "fail min",
+			}, nil
+		}
+	}
+
+	if "dhb" == req.SendBody.Type {
+		if userBalance.BalanceDhb <= amount {
+			amount = userBalance.BalanceDhb
+		}
+
+		if withdrawMaxBnbs < amount {
+			return &v1.WithdrawReply{
+				Status: "fail max",
+			}, nil
+		}
+
+		if withdrawMinBnbs > amount {
 			return &v1.WithdrawReply{
 				Status: "fail min",
 			}, nil
@@ -1825,6 +1867,17 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 				return err
 			}
 
+		}
+
+		if "dhb" == req.SendBody.Type {
+			err = uuc.ubRepo.WithdrawDhb(ctx, user.ID, amount) // 提现
+			if nil != err {
+				return err
+			}
+			_, err = uuc.ubRepo.GreateWithdraw(ctx, user.ID, amount, amount, 0, req.SendBody.Type)
+			if nil != err {
+				return err
+			}
 		}
 		//else if "usdt_2" == req.SendBody.Type {
 		//	err = uuc.ubRepo.WithdrawUsdt3(ctx, user.ID, amount) // 提现

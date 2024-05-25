@@ -823,6 +823,33 @@ func (ur *UserRecommendRepo) UpdateUserRecommend(ctx context.Context, u *biz.Use
 	return true, nil
 }
 
+func (ub *UserBalanceRepo) GetEthUserRecordListByUserId(ctx context.Context, userId int64) (map[string]*biz.EthUserRecord, error) {
+	var ethUserRecord []*EthUserRecord
+
+	res := make(map[string]*biz.EthUserRecord, 0)
+	if err := ub.data.DB(ctx).Table("eth_user_record").Where("user_id=?", userId).Find(&ethUserRecord).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return res, nil
+		}
+
+		return res, errors.New(500, "USER RECOMMEND ERROR", err.Error())
+	}
+
+	for _, item := range ethUserRecord {
+		res[item.Hash] = &biz.EthUserRecord{
+			ID:       item.ID,
+			UserId:   item.UserId,
+			Hash:     item.Hash,
+			Status:   item.Status,
+			Type:     item.Type,
+			Amount:   item.Amount,
+			CoinType: item.CoinType,
+		}
+	}
+
+	return res, nil
+}
+
 // CreateUserBalance .
 func (ub UserBalanceRepo) CreateUserBalance(ctx context.Context, u *biz.User) (*biz.UserBalance, error) {
 	var userBalance UserBalance
