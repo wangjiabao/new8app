@@ -893,6 +893,8 @@ components:
                     type: string
                 recommendTotal:
                     type: string
+                recommendTotalAll:
+                    type: string
                 locationUsdt:
                     type: string
                 locationCurrentMaxSub:

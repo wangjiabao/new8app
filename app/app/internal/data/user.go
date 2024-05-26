@@ -567,7 +567,7 @@ func (ur *UserRecommendRepo) GetUserRecommendByCode(ctx context.Context, code st
 
 	if err := instance.Find(&userRecommends).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return res, errors.NotFound("USER_RECOMMEND_NOT_FOUND", "user recommend not found")
+			return res, nil
 		}
 
 		return nil, errors.New(500, "USER RECOMMEND ERROR", err.Error())
@@ -590,7 +590,7 @@ func (ur *UserRecommendRepo) GetUserRecommendLikeCode(ctx context.Context, code 
 	res := make([]*biz.UserRecommend, 0)
 	if err := ur.data.db.Where("recommend_code Like ?", code+"%").Table("user_recommend").Find(&userRecommends).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return res, errors.NotFound("USER_RECOMMEND_NOT_FOUND", "user recommend not found")
+			return res, nil
 		}
 
 		return nil, errors.New(500, "USER RECOMMEND ERROR", err.Error())

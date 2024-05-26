@@ -1236,6 +1236,8 @@ func (m *UserInfoReply) validate(all bool) error {
 
 	// no validation rules for RecommendTotal
 
+	// no validation rules for RecommendTotalAll
+
 	// no validation rules for LocationUsdt
 
 	// no validation rules for LocationCurrentMaxSub

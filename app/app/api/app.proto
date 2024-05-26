@@ -330,6 +330,7 @@ message UserInfoReply {
 	int64 areaMin = 31; // 小区业绩
 	int64 areaAll = 32; // 总业绩
 	int64 recommendTotal = 33; // 直推人数
+	int64 recommendTotalAll = 69; // 直推人数
 	string locationUsdt = 34; // 节点
 	string locationCurrentMaxSub = 35; //待领取，待产出
 	string locationCurrentSub = 36; //已产出
