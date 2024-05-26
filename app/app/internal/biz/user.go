@@ -332,17 +332,17 @@ func (uuc *UserUseCase) GetExistUserByAddressOrCreate(ctx context.Context, u *Us
 				return nil, errors.New(500, "USER_ERROR", "无效的推荐码")
 			}
 
-			//var (
-			//	locationNew []*LocationNew
-			//)
-			//locationNew, err = uuc.locationRepo.GetLocationsByUserId(ctx, userId)
-			//if nil != err {
-			//	return nil, errors.New(500, "USER_ERROR", "无效的推荐码")
-			//}
+			var (
+				ethRecord map[string]*EthUserRecord
+			)
+			ethRecord, err = uuc.ubRepo.GetEthUserRecordListByUserId(ctx, u.ID)
+			if nil != err {
+				return nil, err
+			}
 
-			//if 0 == len(locationNew) {
-			//	return nil, errors.New(500, "USER_ERROR", "无效的推荐码")
-			//}
+			if 0 >= len(ethRecord) {
+				return nil, errors.New(500, "USER_ERROR", "推荐人未入金")
+			}
 
 			// 查询推荐人的相关信息
 			recommendUser, err = uuc.urRepo.GetUserRecommendByUserId(ctx, userId)
