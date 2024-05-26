@@ -1730,17 +1730,19 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 
 	if "usdt" != req.SendBody.Type {
 		return &v1.WithdrawReply{
-			Status: "fail",
+			Status: "fail type",
 		}, nil
 	} else if "dhb" != req.SendBody.Type {
 		return &v1.WithdrawReply{
-			Status: "fail",
+			Status: "fail type",
 		}, nil
 	}
 
 	userBalance, err = uuc.ubRepo.GetUserBalance(ctx, user.ID)
 	if nil != err {
-		return nil, err
+		return &v1.WithdrawReply{
+			Status: "余额信息错误",
+		}, nil
 	}
 
 	amountFloat, _ := strconv.ParseFloat(req.SendBody.Amount, 10)
@@ -1763,11 +1765,15 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 
 	// 配置
 	var (
-		configs         []*Config
-		withdrawMax     int64
-		withdrawMin     int64
-		withdrawMaxBnbs int64
-		withdrawMinBnbs int64
+		configs            []*Config
+		withdrawMaxStr     string
+		withdrawMax        int64
+		withdrawMinStr     string
+		withdrawMin        int64
+		withdrawMaxStrBnbs string
+		withdrawMaxBnbs    int64
+		withdrawMinStrBnbs string
+		withdrawMinBnbs    int64
 	)
 	configs, err = uuc.configRepo.GetConfigByKeys(ctx,
 		"withdraw_amount_max",
@@ -1778,18 +1784,22 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 	if nil != configs {
 		for _, vConfig := range configs {
 			if "withdraw_amount_max" == vConfig.KeyName {
+				withdrawMaxStr = vConfig.Value
 				withdrawMax, _ = strconv.ParseInt(vConfig.Value+"00000", 10, 64)
 			}
 
 			if "withdraw_amount_min" == vConfig.KeyName {
+				withdrawMinStr = vConfig.Value
 				withdrawMin, _ = strconv.ParseInt(vConfig.Value+"00000", 10, 64)
 			}
 
 			if "withdraw_amount_bnbs_max" == vConfig.KeyName {
+				withdrawMaxStrBnbs = vConfig.Value
 				withdrawMaxBnbs, _ = strconv.ParseInt(vConfig.Value+"00000", 10, 64)
 			}
 
 			if "withdraw_amount_bnbs_min" == vConfig.KeyName {
+				withdrawMinStrBnbs = vConfig.Value
 				withdrawMinBnbs, _ = strconv.ParseInt(vConfig.Value+"00000", 10, 64)
 			}
 		}
@@ -1802,13 +1812,13 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 
 		if withdrawMax < amount {
 			return &v1.WithdrawReply{
-				Status: "fail max",
+				Status: "最大提现金额:" + withdrawMaxStr,
 			}, nil
 		}
 
 		if withdrawMin > amount {
 			return &v1.WithdrawReply{
-				Status: "fail min",
+				Status: "最小提现金额:" + withdrawMinStr,
 			}, nil
 		}
 	}
@@ -1820,13 +1830,13 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 
 		if withdrawMaxBnbs < amount {
 			return &v1.WithdrawReply{
-				Status: "fail max",
+				Status: "最大提现金额:" + withdrawMaxStrBnbs,
 			}, nil
 		}
 
 		if withdrawMinBnbs > amount {
 			return &v1.WithdrawReply{
-				Status: "fail min",
+				Status: "最小提现金额:" + withdrawMinStrBnbs,
 			}, nil
 		}
 	}
@@ -1937,7 +1947,9 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 
 		return nil
 	}); nil != err {
-		return nil, err
+		return &v1.WithdrawReply{
+			Status: "提现错误",
+		}, nil
 	}
 
 	return &v1.WithdrawReply{
