@@ -335,7 +335,7 @@ func (uuc *UserUseCase) GetExistUserByAddressOrCreate(ctx context.Context, u *Us
 			var (
 				ethRecord map[string]*EthUserRecord
 			)
-			ethRecord, err = uuc.ubRepo.GetEthUserRecordListByUserId(ctx, u.ID)
+			ethRecord, err = uuc.ubRepo.GetEthUserRecordListByUserId(ctx, userId)
 			if nil != err {
 				return nil, err
 			}
