@@ -873,14 +873,14 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 				listReward = append(listReward, &v1.UserInfoReply_ListReward{
 					CreatedAt:  vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
 					Reward:     fmt.Sprintf("%.4f", float64(vUserReward.AmountB)/float64(100000)),
-					RewardUsdt: fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)) + "usdt",
+					RewardUsdt: fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)),
 					Type:       8,
 				})
 			} else if "buy" == vUserReward.Reason {
 				listReward = append(listReward, &v1.UserInfoReply_ListReward{
 					CreatedAt:  vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
 					Reward:     fmt.Sprintf("%.4f", float64(vUserReward.AmountB)/float64(100000)),
-					RewardUsdt: fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)) + "usdt",
+					RewardUsdt: fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)),
 					Type:       7,
 				})
 			} else {
