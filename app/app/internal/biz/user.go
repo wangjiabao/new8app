@@ -1770,12 +1770,14 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 		withdrawMaxBnbs    int64
 		withdrawMinStrBnbs string
 		withdrawMinBnbs    int64
+		withdrawOpen       string
 	)
 	configs, err = uuc.configRepo.GetConfigByKeys(ctx,
 		"withdraw_amount_max",
 		"withdraw_amount_min",
 		"withdraw_amount_bnbs_max",
 		"withdraw_amount_bnbs_min",
+		"withdraw_open",
 	)
 	if nil != configs {
 		for _, vConfig := range configs {
@@ -1798,7 +1800,17 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 				withdrawMinStrBnbs = vConfig.Value
 				withdrawMinBnbs, _ = strconv.ParseInt(vConfig.Value+"00000", 10, 64)
 			}
+
+			if "withdraw_open" == vConfig.KeyName {
+				withdrawOpen = vConfig.Value
+			}
 		}
+	}
+
+	if "1" != withdrawOpen {
+		return &v1.WithdrawReply{
+			Status: "ok",
+		}, nil
 	}
 
 	if "usdt" == req.SendBody.Type {
